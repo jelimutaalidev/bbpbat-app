@@ -211,6 +211,7 @@ class PesertaSertifikatSerializer(serializers.ModelSerializer):
             'penempatan',
             'tanggal_mulai',
             'tanggal_selesai',
+            'no_telepon',
         ]
 
 class SertifikatDetailSerializer(serializers.ModelSerializer):

@@ -18,6 +18,7 @@ interface ParticipantData {
   // Status lokal untuk UI
   status: 'siap_terbit' | 'diterbitkan';
   nomorSertifikat?: string;
+  no_telepon?: string;
 }
 
 const CertificateManagement: React.FC = () => {
@@ -46,6 +47,7 @@ const CertificateManagement: React.FC = () => {
         // Transformasi data dari API ke format yang dibutuhkan UI
         const transformedData: ParticipantData[] = response.data.map(p => ({
           ...p,
+          no_telepon: p.no_telepon,
           status: 'siap_terbit', // Semua yang dari endpoint ini statusnya 'siap_terbit'
         }));
         setAllParticipants(transformedData);
@@ -175,8 +177,8 @@ const CertificateManagement: React.FC = () => {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`group py-5 px-1 border-b-2 font-medium text-sm flex items-center gap-2.5 transition-all duration-150 ${activeTab === tab.id
-                    ? 'border-indigo-600 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300'
+                  ? 'border-indigo-600 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300'
                   }`}
               >
                 <div className={`p-1.5 rounded-lg transition-colors ${activeTab === tab.id ? 'bg-indigo-50 text-indigo-600' : 'bg-gray-100 text-gray-500 group-hover:bg-gray-200'}`}>
@@ -277,8 +279,8 @@ const CertificateManagement: React.FC = () => {
                         <td className="px-6 py-4">
                           <div className="flex flex-col items-start gap-1">
                             <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${participant.status === 'diterbitkan'
-                                ? 'bg-green-50 text-green-700 border-green-200'
-                                : 'bg-blue-50 text-blue-700 border-blue-200'
+                              ? 'bg-green-50 text-green-700 border-green-200'
+                              : 'bg-blue-50 text-blue-700 border-blue-200'
                               }`}>
                               {participant.status === 'diterbitkan' ? (
                                 <>
@@ -301,38 +303,33 @@ const CertificateManagement: React.FC = () => {
                         </td>
                         <td className="px-6 py-4 text-sm font-medium">
                           <div className="flex items-center gap-2">
-                            {/* Tombol Terbitkan (Backend) */}
-                            {participant.status === 'siap_terbit' && (
+                            {/* Tombol WhatsApp (Manual) */}
+                            {participant.no_telepon ? (
                               <button
-                                onClick={() => handleIssueCertificate(participant.id)}
-                                disabled={generatingId === participant.id}
-                                className="p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-lg transition-colors border border-transparent hover:border-indigo-100"
-                                title="Terbitkan Sertifikat (Backend Process)"
-                              >
-                                {generatingId === participant.id ? (
-                                  <Hourglass className="w-5 h-5 animate-spin" />
-                                ) : (
-                                  <Send className="w-5 h-5" />
-                                )}
-                              </button>
-                            )}
+                                onClick={() => {
+                                  // Format nomor telepon: hapus 0 di depan, tambah 62, hapus karakter non-digit
+                                  let phone = participant.no_telepon?.replace(/\D/g, '');
+                                  if (phone?.startsWith('0')) {
+                                    phone = '62' + phone.substring(1);
+                                  }
 
-                            {/* Tombol Preview (Hybrid) */}
-                            <button
-                              onClick={() => handlePreview(participant)}
-                              className="p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors border border-transparent hover:border-gray-200"
-                              title="Preview & Download (Hybrid Mode)"
-                            >
-                              <Eye className="w-5 h-5" />
-                            </button>
+                                  const text = encodeURIComponent(
+                                    `Halo ${participant.nama},\n\n` +
+                                    `Selamat! Anda telah menyelesaikan kegiatan PKL/Magang di BBPBAT dengan baik.\n` +
+                                    `Berikut kami lampirkan sertifikat kelulusan Anda.\n\n` +
+                                    `Terima kasih.`
+                                  );
 
-                            {participant.status === 'diterbitkan' && (
-                              <button
-                                className="p-2 text-green-600 hover:text-green-900 hover:bg-green-50 rounded-lg transition-colors border border-transparent hover:border-green-100"
-                                title="Unduh (Backend Result)"
+                                  window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
+                                }}
+                                className="p-2 text-green-600 hover:text-green-900 hover:bg-green-50 rounded-lg transition-colors border border-transparent hover:border-green-100 flex items-center gap-1"
+                                title="Kirim vi WhatsApp"
                               >
-                                <Download className="w-5 h-5" />
+                                <Send className="w-5 h-5" />
+                                <span className="text-xs font-medium">Kirim WA</span>
                               </button>
+                            ) : (
+                              <span className="text-xs text-gray-400 italic px-2">No WA Tidak Ada</span>
                             )}
                           </div>
                         </td>
