@@ -114,4 +114,4 @@ bbpbat-app/
 *   Jangan lupa format code sebelum commit (Frontend: Prettier/ESLint, Backend: Black/Flake8).
 
 ---
-Built with ❤️ by [Your Name/Team]
+Built with ❤️ by Moh. Jeli Almutaali
